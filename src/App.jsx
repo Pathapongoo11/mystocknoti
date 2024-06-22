@@ -107,6 +107,7 @@ function ProductList() {
   const [modalIsOpen, setModalIsOpen] = useState(false);
   const [selectedProductIndex, setSelectedProductIndex] = useState(-1);
   const selectedProduct = products[selectedProductIndex];
+  const isAnyProductConfirmed = products.some((product) => product.isConfirmed);
 
   function openModal(index) {
     setSelectedProductIndex(index);
@@ -169,7 +170,7 @@ function ProductList() {
       <center>
         <p className="Header-Text">รายการสินค้าที่ต้องสั่ง</p>
       </center>
-      <div className="grid grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 gap-3">
         {products.map((product, index) => (
           <div
             key={product.id}
@@ -189,6 +190,18 @@ function ProductList() {
           </div>
         ))}
       </div>
+      <div className="flex justify-center mt-4">
+        <button
+          className={`px-6 py-2 rounded-full font-bold ${
+            isAnyProductConfirmed
+              ? "bg-blue-500 text-white"
+              : "bg-gray-400 text-black"
+          }`}
+          disabled={!isAnyProductConfirmed}
+        >
+          ยืนยัน
+        </button>
+      </div>
       {selectedProduct && modalIsOpen && (
         <Modal
           isOpen={modalIsOpen}
@@ -203,7 +216,7 @@ function ProductList() {
             </h2>
             <div className="flex items-center mb-4">
               <label className="text-sm font-medium mr-3 text-black">
-                Quantity
+                จำนวน
               </label>
 
               <button
@@ -235,7 +248,8 @@ function ProductList() {
                 onChange={(e) => updateProductUnit(e.target.value)}
                 className=" mt-2 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 bg-white text-black"
               >
-                <option value="โล">โล</option>
+                <option value="">กรุณาเลือก</option>
+                <option value="กิโล">โล</option>
                 <option value="อัน">อัน</option>
                 <option value="ชิ้น">ชิ้น</option>
                 <option value="ถุง">ถุง</option>
