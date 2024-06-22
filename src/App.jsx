@@ -44,7 +44,9 @@ function ProductList() {
     setProducts(updatedProducts);
   }
   function increment() {
+    if (selectedProduct.quantity < 10) {
     updateProductQuantity(selectedProductIndex, selectedProduct.quantity + 1);
+    }
   }
 
   function decrement() {
