@@ -2,112 +2,16 @@ import { useState } from "react";
 import "./App.css";
 import Modal from "react-modal";
 import "./index.css";
+import PostDataLine from "./components/hook-service/hook-service-post";
+import ProudctProductsList from "./components/products/product-list";
 
 function ProductList() {
-  const [products, setProducts] = useState([
-    {
-      id: 1,
-      name: "ลูกชิ้นปลา",
-      image:
-        "https://st.bigc-cs.com/cdn-cgi/image/format=webp,quality=90/public/media/catalog/product/19/02/0212419/0212419.jpg",
-      isConfirmed: false,
-      quantity: 1,
-    },
-    {
-      id: 2,
-      name: "ลูกชิ้นหมู",
-      image:
-        "https://st.bigc-cs.com/cdn-cgi/image/format=webp,quality=90/public/media/catalog/product/19/02/0212419/0212419.jpg",
-      isConfirmed: false,
-      quantity: 1,
-    },
-    {
-      id: 3,
-      name: "ปลาเส้น",
-      image:
-        "https://st.bigc-cs.com/cdn-cgi/image/format=webp,quality=90/public/media/catalog/product/19/02/0212419/0212419.jpg",
-      isConfirmed: false,
-      quantity: 1,
-    },
-    {
-      id: 4,
-      name: "ลูกชิ้นวัว",
-      image:
-        "https://st.bigc-cs.com/cdn-cgi/image/format=webp,quality=90/public/media/catalog/product/19/02/0212419/0212419.jpg",
-      isConfirmed: false,
-      quantity: 1,
-    },
-    {
-      id: 5,
-      name: "ลูกชิ้นปลา",
-      image:
-        "https://st.bigc-cs.com/cdn-cgi/image/format=webp,quality=90/public/media/catalog/product/19/02/0212419/0212419.jpg",
-      isConfirmed: false,
-      quantity: 1,
-    },
-    {
-      id: 6,
-      name: "ลูกชิ้นหมู",
-      image:
-        "https://st.bigc-cs.com/cdn-cgi/image/format=webp,quality=90/public/media/catalog/product/19/02/0212419/0212419.jpg",
-      isConfirmed: false,
-      quantity: 1,
-    },
-    {
-      id: 7,
-      name: "ปลาเส้น",
-      image:
-        "https://st.bigc-cs.com/cdn-cgi/image/format=webp,quality=90/public/media/catalog/product/19/02/0212419/0212419.jpg",
-      isConfirmed: false,
-      quantity: 1,
-    },
-    {
-      id: 8,
-      name: "ลูกชิ้นวัว",
-      image:
-        "https://st.bigc-cs.com/cdn-cgi/image/format=webp,quality=90/public/media/catalog/product/19/02/0212419/0212419.jpg",
-      isConfirmed: false,
-      quantity: 1,
-    },
-    {
-      id: 9,
-      name: "ลูกชิ้นปลา",
-      image:
-        "https://st.bigc-cs.com/cdn-cgi/image/format=webp,quality=90/public/media/catalog/product/19/02/0212419/0212419.jpg",
-      isConfirmed: false,
-      quantity: 1,
-    },
-    {
-      id: 10,
-      name: "ลูกชิ้นหมู",
-      image:
-        "https://st.bigc-cs.com/cdn-cgi/image/format=webp,quality=90/public/media/catalog/product/19/02/0212419/0212419.jpg",
-      isConfirmed: false,
-      quantity: 1,
-    },
-    {
-      id: 11,
-      name: "ปลาเส้น",
-      image:
-        "https://st.bigc-cs.com/cdn-cgi/image/format=webp,quality=90/public/media/catalog/product/19/02/0212419/0212419.jpg",
-      isConfirmed: false,
-      quantity: 1,
-    },
-    {
-      id: 12,
-      name: "ลูกชิ้นวัว",
-      image:
-        "https://st.bigc-cs.com/cdn-cgi/image/format=webp,quality=90/public/media/catalog/product/19/02/0212419/0212419.jpg",
-      isConfirmed: false,
-      quantity: 1,
-    },
-
-    // รายการสินค้าเพิ่มเติมตามความจำเป็น
-  ]);
+  const [products, setProducts] = useState(ProudctProductsList);
   const [modalIsOpen, setModalIsOpen] = useState(false);
   const [selectedProductIndex, setSelectedProductIndex] = useState(-1);
   const selectedProduct = products[selectedProductIndex];
   const isAnyProductConfirmed = products.some((product) => product.isConfirmed);
+  const { postData, loading, error } = PostDataLine();
 
   function openModal(index) {
     setSelectedProductIndex(index);
@@ -115,7 +19,6 @@ function ProductList() {
   }
 
   function closeModal() {
-    console.log(products[selectedProductIndex]);
     if (!products[selectedProductIndex].isConfirmed) {
       resetProduct(selectedProductIndex);
     }
@@ -128,7 +31,6 @@ function ProductList() {
         ? { ...product, isConfirmed: true }
         : product
     );
-    console.log(updatedProducts);
     closeModal();
     setProducts(updatedProducts);
   }
@@ -165,12 +67,42 @@ function ProductList() {
     setProducts(updatedProducts);
   }
 
+  function save() {
+    const confirmedProducts = products
+      .filter((p) => p.isConfirmed)
+      .map((p) => {
+        return {
+          item: p.isConfirmed ? "ของหมด" : "ไม่ขาด",
+          status: `${p.name} ${
+            p.isConfirmed == true && p.unit
+              ? `เอา ${p.quantity} ${p.unit} `
+              : `${p.quantity} จำนวน`
+          }`,
+        };
+      });
+
+    postData(confirmedProducts);
+    clearTiem();
+  }
+
+  function clearTiem() {
+    setProducts(
+      products.map((p) => ({ ...p, isConfirmed: false, quantity: 1, unit: "" }))
+    );
+    setModalIsOpen(false);
+  }
+
   return (
     <>
+      {loading && (
+        <div className="full-page-overlay">
+          <div className="spinner">{error && <p>เกิดข้อผิดพลาด</p>}</div>
+        </div>
+      )}
       <center>
         <p className="Header-Text">รายการสินค้าที่ต้องสั่ง</p>
       </center>
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
         {products.map((product, index) => (
           <div
             key={product.id}
@@ -185,7 +117,7 @@ function ProductList() {
               className="w-24 h-24 object-cover rounded-full mx-auto mb-3"
             />
             <div className="text-sm font-medium product-name">
-              {product.name}
+              {index + 1} . {product.name}
             </div>
           </div>
         ))}
@@ -198,8 +130,9 @@ function ProductList() {
               : "bg-gray-400 text-black"
           }`}
           disabled={!isAnyProductConfirmed}
+          onClick={() => save()}
         >
-          ยืนยัน
+          ส่งข้อมูล
         </button>
       </div>
       {selectedProduct && modalIsOpen && (
@@ -214,6 +147,14 @@ function ProductList() {
             <h2 className="text-lg font-semibold mb-4 product-item-name">
               {selectedProduct.name}
             </h2>
+            <div className="flex items-center mb-4">
+              <img
+                src={selectedProduct.image}
+                alt={selectedProduct.name}
+                className="w-24 h-24 object-cover rounded-full mx-auto mb-3"
+              />
+            </div>
+
             <div className="flex items-center mb-4">
               <label className="text-sm font-medium mr-3 text-black">
                 จำนวน
@@ -250,16 +191,25 @@ function ProductList() {
               >
                 <option value="">กรุณาเลือก</option>
                 <option value="กิโล">โล</option>
-                <option value="อัน">อัน</option>
+                <option value="ครึ่งโล">ครึ่งโล</option>
+                <option value="กรัม">กรัม (*สำหรับ ผักบุ้ง)</option>
                 <option value="ชิ้น">ชิ้น</option>
-                <option value="ถุง">ถุง</option>
+                <option value="ถุง">
+                  ถุง (*สำหรับ ลูกชิ้นกุ้ง, แคระ, ลูกชิ้นปลา , เลือดหม)
+                </option>
+                <option value="กล่อง">กล่อง (*สำหรับ มาม่า)</option>
+                <option value="ขีด">ขีด (*สำหรับรากผักชี)</option>
+                <option value="โหล">โหล (*สำหรับ น้ำกระเทียมดอง)</option>
+                <option value="ขวด">
+                  ขวด (*สำหรับ ซอสแห้ง , ซีอิ๋วขาว , ซอสฝาเขียว , น้ำมัน)
+                </option>
               </select>
             </div>
             <button
               onClick={confirmOut}
               className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-700"
             >
-              ยืนยัน
+              ยินยัน
             </button>
           </div>
         </Modal>
