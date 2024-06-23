@@ -169,3 +169,12 @@ input:focus + .slider {
    font-weight: bold;
    line-height: 3;
 }
+
+
+
+.summary-set-width{
+  width: 800px !important;
+}
+
+
+
