@@ -1,12 +1,25 @@
-function ConvertDataToSendLineMsg(){
+function ConvertDataToSendLineMsg(products) {
+    const confirmedProducts = products
+      .filter((p) => p.isConfirmed)
+      .map((p) => {
+        return {
+          item: p.isConfirmed ? "ของหมด" : "ไม่ขาด",
+          status: `${p.name} ${
+            p.isConfirmed == true && p.unit
+              ? `เอา ${p.quantity} ${p.unit} `
+              : `${p.quantity} จำนวน`
+          }`,
+        };
+      });
 
-
-
+    return confirmedProducts
 }
 
-
-function hitstoryBack(){
-
+  function clearTiem() {
+    setProducts(
+      products.map((p) => ({ ...p, isConfirmed: false, quantity: 1, unit: "" }))
+    );
+    setModalIsOpen(false);
 }
 function getAllowedUnits(id) {
     const allowedUnitsMap = {
@@ -34,6 +47,6 @@ function getAllowedUnits(id) {
 
 export {
     ConvertDataToSendLineMsg,
-    hitstoryBack,
+    
     getAllowedUnits
 };

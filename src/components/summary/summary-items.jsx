@@ -1,13 +1,18 @@
 import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { increment, decrement } from "../helper/quantity-helper";
+import { ConvertDataToSendLineMsg } from "../helper/helper";
+import PostDataLine from "../hook-service/hook-service-post";
+import notFoundImage from "../../assets/notfound.png";
 
 function SummaryPage() {
   const location = useLocation();
   const navigate = useNavigate();
+  const [isLoading, setIsLoading] = useState(true);
 
   const { confirmedProducts } = location.state || { confirmedProducts: [] };
   const [products, setProducts] = useState([]);
+  const { postData, response, loading, error } = PostDataLine();
 
   useEffect(() => {
     if (confirmedProducts.length > 0) {
@@ -15,14 +20,13 @@ function SummaryPage() {
       localStorage.setItem("products", JSON.stringify(confirmedProducts));
     } else {
       const savedProducts = JSON.parse(localStorage.getItem("products"));
-      console.log("Saved products from localStorage:", savedProducts);
       if (savedProducts && savedProducts.length > 0) {
         setProducts(savedProducts);
-        console.log("Using saved products from localStorage");
       } else {
         navigate("/");
       }
     }
+    setIsLoading(false); // Start loading
   }, [confirmedProducts, navigate]);
 
   useEffect(() => {
@@ -37,7 +41,7 @@ function SummaryPage() {
       const timer = setTimeout(() => {
         window.removeEventListener("beforeunload", handleBeforeUnload);
         navigate("/");
-      }, 3000); 
+      }, 3000);
       return () => {
         clearTimeout(timer);
         window.removeEventListener("beforeunload", handleBeforeUnload);
@@ -72,7 +76,7 @@ function SummaryPage() {
         }
         return product;
       })
-      .filter((product) => product !== null); 
+      .filter((product) => product !== null);
 
     setProducts(updatedProducts);
     localStorage.setItem("products", JSON.stringify(updatedProducts));
@@ -88,49 +92,72 @@ function SummaryPage() {
     navigate("/", { state: { products: products } });
   };
 
+  const saveData = (data) => {
+    setIsLoading(true); // Start loading
+
+    const processedData = ConvertDataToSendLineMsg(data);
+
+    postData(processedData);
+    removeRedirect();
+  };
+
+  const removeRedirect = () => {
+    navigate("/thank", { state: { products: [] } });
+  };
+
   return (
     <>
+      {loading && (
+        <div className="full-page-overlay">
+          <div className="spinner-container">
+            <div className="spinner"></div>
+          </div>
+        </div>
+      )}
       {products.length === 0 && (
-        <div className="bg-white p-5 rounded-lg shadow-lg my-5 mx-auto relative max-w-4xl min-h-screen summary-set-width text-black">
-          <div className="text-center">
-            <p className="text-2xl text-black">ไม่มีสินค้าในรายการ</p>
-            <p className="text-xl text-black">กำลังนำท่านกลับไปยังหน้าผลิตภัณฑ์...</p>
+        <div class="flex-center bg-white p-5 rounded-lg shadow-lg my-5 mx-auto relative max-w-4xl min-h-screen summary-set-width text-black">
+          <div class="text-center">
+            <img src={notFoundImage} className="w-full"></img>
+            <p class="text-2xl text-black">ไม่มีสินค้าในรายการ</p>
+            <p class="text-xl text-black">
+              กำลังนำท่านกลับไปยังหน้าผลิตภัณฑ์...
+            </p>
           </div>
         </div>
       )}
 
       {products.length > 0 && (
-         <div className="bg-white p-5 rounded-lg shadow-lg my-5 mx-auto relative max-w-4xl min-h-screen summary-set-width">
-         <button
-           className="absolute top-3 left-5 text-gray-500 hover:text-gray-600 focus:outline-none"
-           onClick={goBackToProducts}
-         >
-           <span className="material-icons text-white">ย้อนกลับ</span>
-         </button>
-         <h2 className="text-4xl font-semibold text-center mb-6 text-black">
-           สรุปรายการที่สั่ง
-         </h2>
-         <table className="min-w-full leading-normal">
-           <thead>
-             <tr>
-               <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-sm font-semibold text-gray-600 uppercase tracking-wider">
-                 ลำดับ
-               </th>
-               <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-sm font-semibold text-gray-600 uppercase tracking-wider">
-                 รายการ
-               </th>
-               <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-sm font-semibold text-gray-600 uppercase tracking-wider">
-                 จำนวน
-               </th>
-               <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-sm font-semibold text-gray-600 uppercase tracking-wider">
-                 Actions
-               </th>
-               <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-sm font-semibold text-gray-600 uppercase tracking-wider">
-                 ประเภท
-               </th>
-             </tr>
-           </thead>
-           <tbody>
+        <div className="bg-white p-5 rounded-lg shadow-lg my-5 mx-auto relative max-w-4xl min-h-screen summary-set-width">
+          <button
+            className="absolute top-3 left-5 text-gray-500 hover:text-gray-600 focus:outline-none"
+            onClick={goBackToProducts}
+          >
+            <span className="material-icons text-white">ย้อนกลับ</span>
+          </button>
+          <h2 className="text-4xl font-semibold text-center mb-6 text-black">
+            สรุปรายการที่สั่ง
+          </h2>
+          <table className="min-w-full leading-normal">
+            <thead>
+              <tr>
+                <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-sm font-semibold text-gray-600 uppercase tracking-wider">
+                  ลำดับ
+                </th>
+                <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-sm font-semibold text-gray-600 uppercase tracking-wider">
+                  รายการ
+                </th>
+                <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-sm font-semibold text-gray-600 uppercase tracking-wider">
+                  จำนวน
+                </th>
+                <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-sm font-semibold text-gray-600 uppercase tracking-wider">
+                  Actions
+                </th>
+                <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-sm font-semibold text-gray-600 uppercase tracking-wider">
+                  ประเภท
+                </th>
+              </tr>
+            </thead>
+            <tbody>
               {products.map((product, index) => (
                 <tr key={product.id}>
                   <td className="px-5 py-5 border-b border-gray-200 bg-white text-sm">
@@ -200,18 +227,16 @@ function SummaryPage() {
           </table>
           <br></br>
           <div className="flex items-center">
-          <button
-          className="px-6 w-full py-2 rounded-full font-bold 
-        
-             bg-green-400 text-black"
-        //   onC
-        >
-          ส่งข้อมูล
-        </button> 
-        </div>
+            <button
+              className="px-6 w-full py-2 rounded-full font-bold bg-green-400 text-black"
+              onClick={() => saveData(products)}
+            >
+              ส่งข้อมูล
+            </button>
+          </div>
         </div>
       )}
-         </>
+    </>
   );
 }
 

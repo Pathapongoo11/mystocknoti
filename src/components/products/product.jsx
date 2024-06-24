@@ -1,4 +1,3 @@
-import PostDataLine from "../hook-service/hook-service-post";
 import ProudctProductsList from "../products/product-list";
 import Modal from "react-modal";
 import { useState, useEffect } from "react";
@@ -8,7 +7,6 @@ import {getAllowedUnits} from "../helper/helper"
 function ProductList() {
   const location = useLocation();
 
-  console.log(location.state?.products);
   const [products, setProducts] = useState(ProudctProductsList);
   const navigate = useNavigate();
 
@@ -32,7 +30,6 @@ function ProductList() {
 
 
     if (location.state?.products) {
-    console.log(location.state)
       updateProductsItem(confirmedProductsFromState);
       
     }
