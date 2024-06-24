@@ -1,8 +1,13 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@font-face {
+  font-family: 'MyWebFont';
+  src: url('./assets/front/DBHeaventBdCond.ttf'); /* IE9 Compat Modes */
+}
 :root {
-  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+  font-family: 'MyWebFont';
   line-height: 1.5;
   font-weight: 400;
 
@@ -85,8 +90,15 @@ button:focus-visible {
 
 .spinner {
   width: 100px;
+  content: "กำลังโหลด";
   height: 100px;
   background: url('./assets//chopsticks-834_128.gif') no-repeat center center;
   background-size: cover;
 }
 
+
+.header-summary{
+  color: #1a1a1a;
+  font-size: 40px;
+  font-weight: bold;
+}

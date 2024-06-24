@@ -12,7 +12,6 @@ function PostDataLine() {
       alert('กรุณาเลือกอย่างน้อยหนึ่งรายการ');
       return;
     }
-    console.log("st=>",ItemData)
     setLoading(true);
     try {
       const result = await axios.post('https://pathapong.com/v1/daily/notify', {
@@ -26,10 +25,12 @@ function PostDataLine() {
     } catch (error) {
       setError(error);
       console.error('Error sending data:', error);
+    }finally{
+      setLoading(false);
     }
     setTimeout(() => {
       setLoading(false);
-    }, 1000);
+    }, 2000);
   };
 
   return { postData, loading, response, error };
